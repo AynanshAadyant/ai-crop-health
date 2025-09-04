@@ -3,7 +3,7 @@ import User from "../models/user.model.js";
 const signup = async( req, res ) => {
     try{}
     catch( e ) {
-        console.log( "ERROR in sign up =", e );
+        console.log( "ERROR =", e );
         return res.status( 500 ).json( {
             message: "Something went wrong",
             status: 500,
@@ -15,7 +15,7 @@ const signup = async( req, res ) => {
 const login = async( req, res ) => {
     try{}
     catch( e ) {
-        console.log( "ERROR in login =", e );
+        console.log( "ERROR =", e );
         return res.status( 500 ).json( {
             message: "Something went wrong",
             status: 500,
@@ -27,7 +27,7 @@ const login = async( req, res ) => {
 const getUser = async( req, res ) => {
     try{}
     catch( e ) {
-        console.log( "ERROR in getUser =", e );
+        console.log( "ERROR =", e );
         return res.status( 500 ).json( {
             message: "Something went wrong",
             status: 500,
@@ -39,7 +39,7 @@ const getUser = async( req, res ) => {
 const logout = async( req, res ) => {
     try{}
     catch( e ) {
-        console.log( "ERROR in logout =", e );
+        console.log( "ERROR =", e );
         return res.status( 500 ).json( {
             message: "Something went wrong",
             status: 500,
