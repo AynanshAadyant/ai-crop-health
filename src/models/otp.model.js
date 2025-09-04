@@ -1,10 +1,25 @@
 import mongoose from "mongoose";
+import bcrypt from "bcrypt";
 
 const otpSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   otp: { type: String, required: true },
   otpExpiry: { type: Date, required: true },
-  jwtToken: { type: String } // optional, store JWT after verification
 }, { timestamps: true });
 
-module.exports = mongoose.model('OtpSession', otpSchema);
+otpSchema.pre( 'save', async( next ) => {
+      if( !this.isModified('otp' )) 
+        return next();
+      try{
+        const salt = await bcrypt.genSalt( 10 );
+        this.otp = await bcrypt.hash( this.otp, salt );
+      }
+      catch( e ) {
+        console.log( "ERROR while hashing OTP", e );
+        next( e );
+      }
+})
+
+const Otp = mongoose.model('OtpSession', otpSchema);
+
+export default Otp;

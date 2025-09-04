@@ -8,4 +8,6 @@ const predictionSchema = new mongoose.Schema({
   confidence: { type: Number, required: true }
 }, { timestamps: true });
 
-module.exports = mongoose.model('Prediction', predictionSchema);
+const Prediction = mongoose.model('Prediction', predictionSchema);
+
+export default Prediction;

@@ -15,4 +15,6 @@ const imageSchema = new mongoose.Schema({
   }
 }, { timestamps: true });
 
-module.exports = mongoose.model('CropImage', imageSchema);
+const Image = mongoose.model('CropImage', imageSchema);
+
+export default Image;
