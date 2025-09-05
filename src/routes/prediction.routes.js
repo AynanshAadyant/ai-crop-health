@@ -4,8 +4,8 @@ import { request, getAll, getOne } from "../controllers/prediction.controller.js
 
 const Router = express.Router();
 
-Router.post( "/request", request );
-Router.get( "/", getAll );
-Router.get( "/:id", getOne );
+Router.post( "/request", protectedRoute, request );
+Router.get( "/", protectedRoute, getAll );
+Router.get( "/:id", protectedRoute, getOne );
 
 export default Router;

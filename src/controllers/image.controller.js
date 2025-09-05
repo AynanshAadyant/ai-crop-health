@@ -1,43 +1,39 @@
 import Image from "../models/image.model.js";
-import path from "path";
-import fs from "fs";
+import uploadToCloudinary from "../utils/uploadImage.js";
 
-const upload = async (req, res) => {
+const uploadImage = async (req, res) => {
   try {
-    if (!req.file) {
-      return res.status(400).json({
+    const imageLocal = req.file;
+    if( !imageLocal ) {
+      return res.status( 500 ).json( {
         success: false,
-        status: 400,
-        message: "No image uploaded",
-      });
+        status: 500,
+        message: "Image not accessible"
+      })
+    }
+    const uploadedFile = await uploadToCloudinary( imageLocal.path );
+    if( !uploadedFile ) {
+      return res.status( 500 ).json( {
+        success: false,
+        status: 500,
+        message: "File not uploaded to cloud storage"
+      })
     }
 
-    // File details from multer
-    const { filename, path: filePath, mimetype, size } = req.file;
-
-    // Ensure uploads directory exists
-    const uploadDir = path.join(process.cwd(), "uploads");
-    if (!fs.existsSync(uploadDir)) {
-      fs.mkdirSync(uploadDir, { recursive: true });
-    }
-
-    // Build a public URL for accessing uploaded image
-    const fileUrl = `/uploads/${filename}`; // This will work if you expose "uploads" as static
+    const image = await Image.create( {
+      userId : req.user._id,
+      imageUrl: uploadedFile.url
+    })
 
     return res.status(200).json({
       success: true,
       status: 200,
       message: "Image uploaded successfully",
-      file: {
-        filename,
-        mimetype,
-        size,
-        path: filePath,
-        url: fileUrl,
-      },
+      body : uploadedFile.url,
+      image : image
     });
   } catch (e) {
-    console.log("ERROR =", e);
+    console.error("ERROR =", e);
     return res.status(500).json({
       message: "Something went wrong",
       status: 500,
@@ -63,7 +59,8 @@ const getImages = async( req, res ) => {
         return res.status( 200 ).json({
             success: true,
             message: "Images fetched successfully",
-            status: 200
+            status: 200,
+            body : images
         })
     }
     catch( e ) {
@@ -98,8 +95,9 @@ const getImageById = async( req, res ) => {
     return res.status( 200 ).json({
         message: "Image fetched successfully",
         status: 200,
-        success: true
+        success: true,
+        body : image
     })
 }
 
-export { upload, getImages, getImageById };
+export { uploadImage, getImages, getImageById };

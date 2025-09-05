@@ -3,6 +3,7 @@ import Otp from "../models/otp.model.js";
 import generateOTP from "../utils/generateOTP.js";
 import sendOTP from "../utils/sendOTP.js";
 import generateCookie from "../utils/generateCookie.js";
+import bcrypt from "bcrypt";
 
 const signup = async( req, res ) => {
     try{
@@ -29,14 +30,14 @@ const signup = async( req, res ) => {
             phoneNumber
         })
 
-        const otp = generateOTP();
+        const otp = await generateOTP();
         const otpExpiry = Date.now() + 20 * 60 * 1000;
 
         const newOTP = await Otp.create( { userId : newUser._id,
             otp, otpExpiry 
         })
 
-        sendOTP( phoneNumber, newOTP );
+        sendOTP( phoneNumber, otp );
 
         return res.status( 200 ).json( {
             success: true, 
@@ -68,12 +69,30 @@ const verifySignupOtp = async (req, res) => {
       return res.status(400).json({ success: false, message: "OTP not found" });
     }
 
-    if (otpRecord.otp !== otp || otpRecord.otpExpiry < Date.now()) {
-      return res.status(400).json({ success: false, message: "Invalid or expired OTP" });
+    const otpMatch = bcrypt.compare( otp, otpRecord.otp )
+    if( !otpMatch )
+    {
+        return res.status( 400 ).json({
+            success: false,
+            message: "Invalid OTP"
+        })
+    }
+
+    if ( otpRecord.otpExpiry < Date.now()) {
+      return res.status(400).json({ success: false, message: "Expired OTP" });
     }
 
     user.isVerified = true;
     await user.save();
+    // Generate JWT
+    const token = generateCookie( user );
+
+    // Set cookie
+    res.cookie("auth_token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+    });
     await Otp.deleteMany({ userId: user._id });
 
     return res.status(200).json({ success: true, message: "Account verified successfully" });
@@ -150,8 +169,18 @@ const verifyLoginOtp = async (req, res) => {
       return res.status(400).json({ success: false, message: "OTP not found" });
     }
 
-    if (otpRecord.otp !== otp || otpRecord.otpExpiry < Date.now()) {
-      return res.status(400).json({ success: false, message: "Invalid or expired OTP" });
+    const otpMatch = bcrypt.compare( otp, otpRecord.otp )
+
+    if( !otpMatch )
+    {
+        return res.status( 400 ).json({
+            success: false,
+            message: "Invalid OTP"
+        })
+    }
+
+    if ( otpRecord.otpExpiry < Date.now()) {
+      return res.status(400).json({ success: false, message: "Expired OTP" });
     }
 
     // Generate JWT
@@ -217,4 +246,4 @@ const logout = async( req, res ) => {
     }
 }
 
-export { signup, verifySignupOtp, login, getUser, logout }
+export { signup, verifySignupOtp, login, verifyLoginOtp, getUser, logout }

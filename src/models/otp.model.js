@@ -7,9 +7,7 @@ const otpSchema = new mongoose.Schema({
   otpExpiry: { type: Date, required: true },
 }, { timestamps: true });
 
-otpSchema.pre( 'save', async( next ) => {
-      if( !this.isModified('otp' )) 
-        return next();
+otpSchema.pre( 'save', async function( next ) {
       try{
         const salt = await bcrypt.genSalt( 10 );
         this.otp = await bcrypt.hash( this.otp, salt );

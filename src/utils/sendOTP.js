@@ -1,3 +1,3 @@
 export default function sendOTP( phoneNumber, otp ) {
-    console.log( phoneNumber );
+    console.log( phoneNumber, "OTP=", otp );
 }
