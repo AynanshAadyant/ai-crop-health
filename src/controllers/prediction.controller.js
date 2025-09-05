@@ -13,7 +13,6 @@ const request = async( req, res ) => {
     try{
         const user = req.user;
         const {image} = req.body;
-        console.log( image );
         const result = predict( image.imageUrl );
         if( !result ) {
             return res.status( 400 ).json( {
