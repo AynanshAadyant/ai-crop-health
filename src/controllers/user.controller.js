@@ -1,7 +1,49 @@
 import User from "../models/user.model.js";
+import Otp from "../models/otp.model.js";
+import generateOTP from "../utils/generateOTP.js";
+import sendOTP from "../utils/sendOTP.js";
+import generateCookie from "../utils/generateCookie.js";
 
 const signup = async( req, res ) => {
-    try{}
+    try{
+        const { name, phoneNumber } = req.body;
+        if( !name || !phoneNumber ) {
+            return res.status( 500 ).json({
+                message: "Empty fields present",
+                success: false,
+                status: 500
+            })
+        }
+
+        const duplicateUser = await User.findOne( { phoneNumber } );
+        if( duplicateUser ) {
+            return res.status( 500 ).json( {
+                success: false,
+                status: 500,
+                message: "Another account with same phone number registered"
+            })
+        }
+
+        const newUser = await User.create( {
+            name, 
+            phoneNumber
+        })
+
+        const otp = generateOTP();
+        const otpExpiry = Date.now() + 20 * 60 * 1000;
+
+        const newOTP = await Otp.create( { userId : newUser._id,
+            otp, otpExpiry 
+        })
+
+        sendOTP( phoneNumber, newOTP );
+
+        return res.status( 200 ).json( {
+            success: true, 
+            message : "Sign up successful, verify OTP",
+            status: 200
+        })
+    }
     catch( e ) {
         console.log( "ERROR =", e );
         return res.status( 500 ).json( {
@@ -11,9 +53,79 @@ const signup = async( req, res ) => {
         })
     }
 }
+
+const verifySignupOtp = async (req, res) => {
+  try {
+    const { phoneNumber, otp } = req.body;
+
+    const user = await User.findOne({ phoneNumber });
+    if (!user) {
+      return res.status(400).json({ success: false, message: "User not found" });
+    }
+
+    const otpRecord = await Otp.findOne({ userId: user._id }).sort({ createdAt: -1 });
+    if (!otpRecord) {
+      return res.status(400).json({ success: false, message: "OTP not found" });
+    }
+
+    if (otpRecord.otp !== otp || otpRecord.otpExpiry < Date.now()) {
+      return res.status(400).json({ success: false, message: "Invalid or expired OTP" });
+    }
+
+    user.isVerified = true;
+    await user.save();
+    await Otp.deleteMany({ userId: user._id });
+
+    return res.status(200).json({ success: true, message: "Account verified successfully" });
+  } catch (e) {
+    console.log("ERROR =", e);
+    return res.status(500).json({ success: false, message: "Something went wrong" });
+  }
+};
+
 
 const login = async( req, res ) => {
-    try{}
+    try{
+        const { phoneNumber } = req.body;
+        //validation
+
+        const user = await User.findOne({ phoneNumber });
+        if( !user ) {
+            return res.status( 404 ).json( {
+                success: false,
+                status: 404,
+                message: "User not found"
+            })
+        }
+        if( !user.isVerified ) {
+            return res.status( 500 ).json( {
+                success: false,
+                message: "User not verified",
+            })
+        }
+
+        const recentOtp = await Otp.findOne({ userId: user._id }).sort({ createdAt: -1 });
+        if (recentOtp && Date.now() - recentOtp.createdAt < 60 * 1000) {
+            return res.status(429).json({ success: false, message: "Wait before requesting another OTP" });
+        }
+
+
+        const otp = generateOTP();
+        const otpExpiry = Date.now() + 20 * 60 * 1000;
+        const storeOTP = await Otp.create( {
+            userId : user._id,
+            otp,
+            otpExpiry
+        })
+        sendOTP( phoneNumber, otp );
+    
+        return res.status( 200 ).json( {
+            success: true,
+            message: "OTP sent for login",
+            status: 200,
+        })
+
+    }
     catch( e ) {
         console.log( "ERROR =", e );
         return res.status( 500 ).json( {
@@ -24,8 +136,54 @@ const login = async( req, res ) => {
     }
 }
 
+const verifyLoginOtp = async (req, res) => {
+  try {
+    const { phoneNumber, otp } = req.body;
+
+    const user = await User.findOne({ phoneNumber });
+    if (!user) {
+      return res.status(400).json({ success: false, message: "User not found" });
+    }
+
+    const otpRecord = await Otp.findOne({ userId: user._id }).sort({ createdAt: -1 });
+    if (!otpRecord) {
+      return res.status(400).json({ success: false, message: "OTP not found" });
+    }
+
+    if (otpRecord.otp !== otp || otpRecord.otpExpiry < Date.now()) {
+      return res.status(400).json({ success: false, message: "Invalid or expired OTP" });
+    }
+
+    // Generate JWT
+    const token = generateCookie( user );
+
+    // Set cookie
+    res.cookie("auth_token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+    });
+
+    await Otp.deleteMany({ userId: user._id }); // clean old OTPs
+
+    return res.status(200).json({ success: true, message: "Login successful", token });
+  } catch (e) {
+    console.log("ERROR =", e);
+    return res.status(500).json({ success: false, message: "Something went wrong" });
+  }
+};
+
+
 const getUser = async( req, res ) => {
-    try{}
+    try{
+        const user = req.user;
+        return res.status( 200 ).json( {
+            message: "User fetched successfully",
+            status: 200,
+            success: true,
+            body: user
+        })
+    }
     catch( e ) {
         console.log( "ERROR =", e );
         return res.status( 500 ).json( {
@@ -37,7 +195,18 @@ const getUser = async( req, res ) => {
 }
 
 const logout = async( req, res ) => {
-    try{}
+    try{
+        res.clearCookie( 'auth_token', {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "strict",
+        })
+        return res.status( 200 ).json({
+            success:true,
+            message: "Log out successful",
+            status: 200
+        })
+    }
     catch( e ) {
         console.log( "ERROR =", e );
         return res.status( 500 ).json( {
@@ -48,4 +217,4 @@ const logout = async( req, res ) => {
     }
 }
 
-export { signup, login, getUser, logout }
+export { signup, verifySignupOtp, login, getUser, logout }
