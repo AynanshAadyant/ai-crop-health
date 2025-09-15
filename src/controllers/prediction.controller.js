@@ -1,4 +1,4 @@
-import Image from "../models/image.model.js";
+import Crop from "../models/crop.model.js";
 import Prediction from "../models/prediction.model.js";
 
 function predict( imageId ) {
@@ -12,8 +12,17 @@ function predict( imageId ) {
 const request = async( req, res ) => {
     try{
         const user = req.user;
-        const {image} = req.body;
+        const {image, crop} = req.body;
         const result = predict( image.imageUrl );
+
+        const cropData = await Crop.findById( crop._id );
+        if( !cropData ){
+            return res.status( 404 ).json( {
+                success: false,
+                message: "Crop not found"
+            })
+        }
+        cropData.healthIndex = result.healthIndex;
         if( !result ) {
             return res.status( 400 ).json( {
                 message: "Result not generated",
@@ -23,9 +32,9 @@ const request = async( req, res ) => {
         }
 
         const prediction = await Prediction.create( {
-            userId : user._id,
+            user,
             imageId : image._id,
-            healthStatus: result.healthStatus,
+            healthIndex: result.healthIndex,
             disease : result.disease || "",
             confidence : result.confidence || 0
         })

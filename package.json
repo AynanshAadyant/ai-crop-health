@@ -11,6 +11,10 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@vonage/messages": "^1.21.5",
+    "@vonage/server-sdk": "^3.24.3",
+    "@vonage/video": "^1.25.2",
+    "axios": "^1.12.2",
     "bcrypt": "^6.0.0",
     "cloudinary": "^2.7.0",
     "cookie-parser": "^1.4.7",
@@ -20,7 +24,8 @@
     "express": "^5.1.0",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.18.0",
-    "multer": "^2.0.2"
+    "multer": "^2.0.2",
+    "openmeteo": "^1.2.0"
   },
   "devDependencies": {
     "nodemon": "^3.1.10"

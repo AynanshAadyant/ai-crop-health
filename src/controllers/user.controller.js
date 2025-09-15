@@ -16,6 +16,22 @@ const signup = async( req, res ) => {
             })
         }
 
+        const nameRegex = /^[A-Za-z ]{2,50}$/;
+        const phoneRegex = /^[6-9]\d{9}$/;
+
+        if( !nameRegex.test( name ) ) {
+            return res.status( 400 ).json( {
+                message: "Invalid name format. Use only alphabets and spaces.",
+                success: false
+            })
+        }
+
+        if( !phoneRegex.test( phoneNumber ) ) {
+            return res.status( 400 ).json( {
+                message: "Invalid phone number. Must be 10 digits number."
+            })
+        }
+
         const duplicateUser = await User.findOne( { phoneNumber } );
         if( duplicateUser ) {
             return res.status( 500 ).json( {
@@ -33,11 +49,17 @@ const signup = async( req, res ) => {
         const otp = await generateOTP();
         const otpExpiry = Date.now() + 20 * 60 * 1000;
 
-        const newOTP = await Otp.create( { userId : newUser._id,
+        await Otp.create( { userId : newUser._id,
             otp, otpExpiry 
         })
 
-        sendOTP( phoneNumber, otp );
+        const response = sendOTP( phoneNumber, otp );
+        if( !response.success ) {
+            return res.status( response.status ).json( {
+                message: response.message,
+                success: false
+            })
+        }
 
         return res.status( 200 ).json( {
             success: true, 
@@ -131,12 +153,18 @@ const login = async( req, res ) => {
 
         const otp = generateOTP();
         const otpExpiry = Date.now() + 20 * 60 * 1000;
-        const storeOTP = await Otp.create( {
+        await Otp.create( {
             userId : user._id,
             otp,
             otpExpiry
         })
-        sendOTP( phoneNumber, otp );
+        const response = sendOTP( phoneNumber, otp );
+        if( !response.success ) {
+            return res.status( response.status ).json( {
+                message: response.message,
+                success: false
+            })
+        }
     
         return res.status( 200 ).json( {
             success: true,

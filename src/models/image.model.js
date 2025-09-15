@@ -1,9 +1,10 @@
 import mongoose from "mongoose";
 
 const imageSchema = new mongoose.Schema({
-  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   imageUrl: { type: String, required: true },
-  type: { type: String, enum: ['multispectral', 'hyperspectral'] },
+  cropName : { type: mongoose.Schema.Types.ObjectId, ref: 'Crop'},
+  type: { type: String },
   metadata: {
     cameraType: String,
     location: {
@@ -12,7 +13,8 @@ const imageSchema = new mongoose.Schema({
     },
     captureDate: Date,
     spectralBands: [String]
-  }
+  },
+  isDeleted: Boolean
 }, { timestamps: true });
 
 const Image = mongoose.model('CropImage', imageSchema);

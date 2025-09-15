@@ -46,7 +46,7 @@ const getImages = async( req, res ) => {
     try{
         const user = req.user;
 
-        const images = await Image.find({ userId : user._id })
+        const images = await Image.find({ user : user._id, isDeleted: false })
 
         if( !images || images.length === 0 ) {
             return res.status( 404 ).json({
@@ -91,6 +91,12 @@ const getImageById = async( req, res ) => {
             message: "Image not found"
         })
     }
+    if( image.isDeleted ) {
+      return res.status( 400 ).json({
+        message: "The Image has been deleted",
+        success: false
+      })
+    }
 
     return res.status( 200 ).json({
         message: "Image fetched successfully",
@@ -100,4 +106,25 @@ const getImageById = async( req, res ) => {
     })
 }
 
-export { uploadImage, getImages, getImageById };
+const deleteImage = async( req, res ) => {
+  const {id} = req.params;
+  const image = await Image.findById( id );
+  if( !image ) {
+    return res.status( 404 ).json( {
+      message: "Image not found",
+      success: false,
+      status: 404
+    })
+  }
+
+  image.isDeleted = true;
+  await image.save();
+
+  return res.status( 200 ).json( {
+    success: true,
+    message: "Image deleted successfully",
+    status: 200
+  })
+}
+
+export { uploadImage, getImages, getImageById, deleteImage };
