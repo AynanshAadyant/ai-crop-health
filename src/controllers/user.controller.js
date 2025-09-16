@@ -49,7 +49,7 @@ const signup = async( req, res ) => {
         const otp = await generateOTP();
         const otpExpiry = Date.now() + 20 * 60 * 1000;
 
-        await Otp.create( { userId : newUser._id,
+        await Otp.create( { user: newUser._id,
             otp, otpExpiry 
         })
 
@@ -86,12 +86,12 @@ const verifySignupOtp = async (req, res) => {
       return res.status(400).json({ success: false, message: "User not found" });
     }
 
-    const otpRecord = await Otp.findOne({ userId: user._id }).sort({ createdAt: -1 });
+    const otpRecord = await Otp.findOne({ user }).sort({ createdAt: -1 });
     if (!otpRecord) {
       return res.status(400).json({ success: false, message: "OTP not found" });
     }
 
-    const otpMatch = bcrypt.compare( otp, otpRecord.otp )
+    const otpMatch = bcrypt.compare( otp.toString(), otpRecord.otp.toString() )
     if( !otpMatch )
     {
         return res.status( 400 ).json({
@@ -115,7 +115,7 @@ const verifySignupOtp = async (req, res) => {
       secure: process.env.NODE_ENV === "production",
       sameSite: "strict",
     });
-    await Otp.deleteMany({ userId: user._id });
+    await Otp.deleteMany({ phoneNumber });
 
     return res.status(200).json({ success: true, message: "Account verified successfully" });
   } catch (e) {
@@ -145,7 +145,7 @@ const login = async( req, res ) => {
             })
         }
 
-        const recentOtp = await Otp.findOne({ userId: user._id }).sort({ createdAt: -1 });
+        const recentOtp = await Otp.findOne({ user }).sort({ createdAt: -1 });
         if (recentOtp && Date.now() - recentOtp.createdAt < 60 * 1000) {
             return res.status(429).json({ success: false, message: "Wait before requesting another OTP" });
         }
@@ -154,7 +154,7 @@ const login = async( req, res ) => {
         const otp = generateOTP();
         const otpExpiry = Date.now() + 20 * 60 * 1000;
         await Otp.create( {
-            userId : user._id,
+            user, 
             otp,
             otpExpiry
         })
