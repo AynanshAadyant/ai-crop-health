@@ -53,10 +53,10 @@ const signup = async( req, res ) => {
             otp, otpExpiry 
         })
 
-        const response = sendOTP( phoneNumber, otp );
-        if( !response.success ) {
-            return res.status( response.status ).json( {
-                message: response.message,
+        const {success} = await sendOTP( phoneNumber, otp );
+        if( !success ) {
+            return res.status( 500 ).json( {
+                message: "Something went wrong while sending OTP",
                 success: false
             })
         }
