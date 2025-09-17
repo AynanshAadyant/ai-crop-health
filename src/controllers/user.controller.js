@@ -197,12 +197,12 @@ const verifyLoginOtp = async (req, res) => {
       return res.status(400).json({ success: false, message: "User not found" });
     }
 
-    const otpRecord = await Otp.findOne({ userId: user._id }).sort({ createdAt: -1 });
+    const otpRecord = await Otp.findOne({ user: user._id }).sort({ createdAt: -1 });
     if (!otpRecord) {
       return res.status(400).json({ success: false, message: "OTP not found" });
     }
 
-    const otpMatch = bcrypt.compare( otp, otpRecord.otp )
+    const otpMatch = bcrypt.compare( typeof( otp ) === 'string' ? otp : otp.toString(), typeof( otpRecord.otp) === 'string' ? otpRecord.otp : otpRecord.otp.toString() )
 
     if( !otpMatch )
     {
