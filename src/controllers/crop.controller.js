@@ -36,7 +36,7 @@ const addCrop = async( req, res ) => {
 const getAllCrops = async( req, res ) => {
     console.log( "Fetching all crops for the user" );
     const user = req.user;
-    const crops = await Crop.find( { user } );
+    const crops = await Crop.find( { user, isDeleted: false } );
     if( !crops || !Array.isArray(crops) )
         return res.status( 500 ).json( {
             success: false,
@@ -64,7 +64,7 @@ const getAllCrops = async( req, res ) => {
 const getCropById = async( req, res ) => {
     console.log( "Fetching a particular crop of a particular user" );
     const { id } = req.params;
-    const crop = await Crop.findById( id );
+    const crop = await Crop.findOne( {_id: id, isDeleted: false} );
     if( !crop ) {
         return res.status( 404 ).json( {
             message: "Crop not found",
