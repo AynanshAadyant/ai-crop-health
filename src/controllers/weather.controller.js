@@ -3,6 +3,34 @@ import dotenv from "dotenv"
 
 dotenv.config();
 
+const mapWeatherCode = (code) => {
+  const codes = {
+    0: "Clear sky",
+    1: "Mainly clear",
+    2: "Partly cloudy",
+    3: "Overcast",
+    45: "Fog",
+    48: "Depositing rime fog",
+    51: "Light drizzle",
+    53: "Moderate drizzle",
+    55: "Dense drizzle",
+    61: "Slight rain",
+    63: "Moderate rain",
+    65: "Heavy rain",
+    71: "Slight snow fall",
+    73: "Moderate snow fall",
+    75: "Heavy snow fall",
+    80: "Slight rain showers",
+    81: "Moderate rain showers",
+    82: "Violent rain showers",
+    95: "Thunderstorm",
+    96: "Thunderstorm with slight hail",
+    99: "Thunderstorm with heavy hail",
+  };
+  return codes[code] || "Unknown";
+};
+
+
 const currentWeather = async (req, res) => {
     try {
     const { lat, long } = req.body;
@@ -11,6 +39,7 @@ const currentWeather = async (req, res) => {
       latitude: lat,
       longitude: long,
       daily: [
+        "weather_code",
         "temperature_2m_max",
         "temperature_2m_min",
         "rain_sum",
@@ -18,6 +47,7 @@ const currentWeather = async (req, res) => {
         "showers_sum"
       ],
       hourly: [
+        "weather_code",
         "temperature_2m",
         "relative_humidity_2m",
         "dew_point_2m",
@@ -29,6 +59,7 @@ const currentWeather = async (req, res) => {
         "wind_speed_10m"
       ],
       current: [
+        "weather_code",
         "temperature_2m",
         "relative_humidity_2m",
         "precipitation",
@@ -48,13 +79,15 @@ const currentWeather = async (req, res) => {
     // --- Current weather ---
     const current = response.current();
     const currentWeather = {
-      time: new Date((Number(current.time()) + utcOffsetSeconds) * 1000),
-      temperature_2m: current.variables(0).value(),
-      relative_humidity_2m: current.variables(1).value(),
-      precipitation: current.variables(2).value(),
-      rain: current.variables(3).value(),
-      showers: current.variables(4).value(),
-      wind_speed_10m: current.variables(5).value(),
+      time: new Date((Number(current.time()) + utcOffsetSeconds) * 1000), 
+      weather_code: current.variables(0).value(), //weather_code
+      weather_description: mapWeatherCode(current.variables(0).value()), //type of weather expected
+      temperature_2m: current.variables(0).value(), //temperature in celsius
+      relative_humidity_2m: current.variables(1).value(), //relative humidity ( % )
+      precipitation: current.variables(2).value(), //precipitation (mm)
+      rain: current.variables(3).value(), //rainfall ( mm )
+      showers: current.variables(4).value(), //showers from convetive percipitation (mm)
+      wind_speed_10m: current.variables(5).value(), //wind speed at 10m elevation ( kmph)
     };
 
     // --- Daily forecast (today + tomorrow) ---
@@ -64,17 +97,20 @@ const currentWeather = async (req, res) => {
     );
 
     const dailyForecast = {
-      time: times,
-      temperature_2m_max: daily.variables(0).valuesArray(),
-      temperature_2m_min: daily.variables(1).valuesArray(),
-      rain_sum: daily.variables(2).valuesArray(),
-      wind_speed_10m_max: daily.variables(3).valuesArray(),
-      showers_sum: daily.variables(4).valuesArray(),
+      time: times, //timestamp
+      weather_code: daily.variables(0).valuesArray(), //weather-code
+      temperature_2m_max: daily.variables(0).valuesArray(), //max temperature at 2m elevation ( celsius )
+      temperature_2m_min: daily.variables(1).valuesArray(), //min temperature at 2m elevation ( celsius )
+      rain_sum: daily.variables(2).valuesArray(), //sum of daily rain ( mm )
+      wind_speed_10m_max: daily.variables(3).valuesArray(), //max wind speed at 10m elevation ( kmph )
+      showers_sum: daily.variables(4).valuesArray(), //showers sum ( mm )
     };
 
     // Pick tomorrow’s index (1 = tomorrow, 0 = today)
     const tomorrowForecast = {
       date: dailyForecast.time[1],
+      weather_code: dailyForecast.weather_code[1],
+      weather_description: mapWeatherCode(dailyForecast.weather_code[1]),
       temperature_max: dailyForecast.temperature_2m_max[1],
       temperature_min: dailyForecast.temperature_2m_min[1],
       rain_sum: dailyForecast.rain_sum[1],
