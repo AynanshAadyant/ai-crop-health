@@ -7,6 +7,7 @@ import bcrypt from "bcrypt";
 
 const signup = async( req, res ) => {
     try{
+        console.log( "Signing up" );
         const { name, phoneNumber } = req.body;
         if( !name || !phoneNumber ) {
             return res.status( 500 ).json({
@@ -79,6 +80,7 @@ const signup = async( req, res ) => {
 
 const verifySignupOtp = async (req, res) => {
   try {
+    console.log( "Enter OTP after sign up" );
     const { phoneNumber, otp } = req.body;
 
     const user = await User.findOne({ phoneNumber });
@@ -116,8 +118,9 @@ const verifySignupOtp = async (req, res) => {
       sameSite: "strict",
     });
     await Otp.deleteMany({ phoneNumber });
+    console.log( "OTP verified" );
 
-    return res.status(200).json({ success: true, message: "Account verified successfully" });
+    return res.status(200).json({ success: true, message: "Account verified successfully", token : auth_token });
   } catch (e) {
     console.log("ERROR =", e);
     return res.status(500).json({ success: false, message: "Something went wrong" });
@@ -127,6 +130,7 @@ const verifySignupOtp = async (req, res) => {
 
 const login = async( req, res ) => {
     try{
+        console.log( "Logging in" );
         const { phoneNumber } = req.body;
         //validation
 
@@ -185,6 +189,7 @@ const login = async( req, res ) => {
 
 const verifyLoginOtp = async (req, res) => {
   try {
+    console.log( "Verifying OTP after login" );
     const { phoneNumber, otp } = req.body;
 
     const user = await User.findOne({ phoneNumber });
@@ -222,8 +227,8 @@ const verifyLoginOtp = async (req, res) => {
     });
 
     await Otp.deleteMany({ userId: user._id }); // clean old OTPs
-
-    return res.status(200).json({ success: true, message: "Login successful", token });
+    console.log( "OTP verified" );
+    return res.status(200).json({ success: true, message: "Login successful", token : token });
   } catch (e) {
     console.log("ERROR =", e);
     return res.status(500).json({ success: false, message: "Something went wrong" });
