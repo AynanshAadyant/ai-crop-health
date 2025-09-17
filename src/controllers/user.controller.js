@@ -120,7 +120,7 @@ const verifySignupOtp = async (req, res) => {
     await Otp.deleteMany({ phoneNumber });
     console.log( "OTP verified" );
 
-    return res.status(200).json({ success: true, message: "Account verified successfully", token : auth_token });
+    return res.status(200).json({ success: true, message: "Account verified successfully", token : token });
   } catch (e) {
     console.log("ERROR =", e);
     return res.status(500).json({ success: false, message: "Something went wrong" });
