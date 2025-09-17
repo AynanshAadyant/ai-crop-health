@@ -22,8 +22,8 @@ const cropSchema = new mongoose.Schema( {
             max: 180 //east
         }
     },
-    healthIndex: {
-        type: Number //score of 0-100 from model
+    health: {
+        type: String
     },
     isDeleted:{
         type: Boolean
