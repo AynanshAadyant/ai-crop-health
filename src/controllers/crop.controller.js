@@ -43,6 +43,8 @@ const getAllCrops = async( req, res ) => {
             message: "Something went wrong while fetching all crops of the user"
     })
 
+    console.log( crops );
+    
     if( crops.length === 0 ) {
         return res.status( 200 ).json({
             message: "No Crop data up till now",
