@@ -3,6 +3,7 @@ import uploadToCloudinary from "../utils/uploadImage.js";
 
 const uploadImage = async (req, res) => {
   try {
+    console.log( "Uploading Image" );
     const imageLocal = req.file;
     if( !imageLocal ) {
       return res.status( 500 ).json( {
@@ -24,7 +25,7 @@ const uploadImage = async (req, res) => {
       imageUrl: uploadedFile.url,
       isDeleted: false
     })
-
+    console.log( "Image uploaded" );
     return res.status(200).json({
       success: true,
       status: 200,
@@ -44,6 +45,7 @@ const uploadImage = async (req, res) => {
 
 const getImages = async( req, res ) => {
     try{
+      console.log( "Fetching all images" );
         const images = await Image.find({ isDeleted: false })
 
         if( !images || images.length === 0 ) {
@@ -53,7 +55,7 @@ const getImages = async( req, res ) => {
                 status: 404
             })
         }
-
+        console.log( "Images fetched" );
         return res.status( 200 ).json({
             success: true,
             message: "Images fetched successfully",
@@ -72,6 +74,7 @@ const getImages = async( req, res ) => {
 }
 
 const getImageById = async( req, res ) => {
+  console.log( "Fetching a particular image" );
     const { id } = req.params;
     if( !id ) {
         return res.status( 500 ).json({
@@ -95,7 +98,7 @@ const getImageById = async( req, res ) => {
         success: false
       })
     }
-
+    console.log( "Image fetched successfully" );
     return res.status( 200 ).json({
         message: "Image fetched successfully",
         status: 200,
@@ -105,6 +108,7 @@ const getImageById = async( req, res ) => {
 }
 
 const deleteImage = async( req, res ) => {
+  console.log( "Deleting image" );
   const {id} = req.params;
   const image = await Image.findById( id );
   if( !image ) {
@@ -117,7 +121,7 @@ const deleteImage = async( req, res ) => {
 
   image.isDeleted = true;
   await image.save();
-
+  console.log( "Image deleted" );
   return res.status( 200 ).json( {
     success: true,
     message: "Image deleted successfully",

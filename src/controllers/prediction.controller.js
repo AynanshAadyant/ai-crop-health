@@ -11,6 +11,7 @@ function predict( imageId ) {
 
 const request = async( req, res ) => {
     try{
+        console.log( "Making prediction" );
         const {image, crop} = req.body;
         const result = predict( image.imageUrl );
 
@@ -36,7 +37,7 @@ const request = async( req, res ) => {
             disease : result.disease || "",
             confidence : result.confidence || 0
         })
-
+        console.log( "Prediction made" );
         return res.status( 200 ).json( {
             success: true,
             message: "Prediction made",
@@ -56,7 +57,7 @@ const request = async( req, res ) => {
 
 const getAll = async( req, res ) => {
     try{
-        
+        console.log( "Fetching all predictions " );
         const predictions = await Prediction.find();
         if( !predictions || predictions.length === 0 ) {
             return res.status( 500 ).json( {
@@ -65,7 +66,7 @@ const getAll = async( req, res ) => {
                 status: 500
             })
         }
-
+        console.log( "All predictions fetched" );
         return res.status( 200 ).json( {
             message: "Predictions fetched successfully",
             status: 200,
@@ -85,7 +86,8 @@ const getAll = async( req, res ) => {
 
 const getOne = async( req, res ) => {
     try{
-        const id = req.params;
+        console.log("Fetching prediction id " );
+        const {id} = req.params;
         if( !id ) {
             return res.status( 500 ).json( {
                 message : "Id not accessible",
@@ -102,7 +104,7 @@ const getOne = async( req, res ) => {
                 status: 404
             })
         }
-        
+        console.log( "Prediction fetched successfully" );
         return res.status( 200 ).json( {
             message: "Prediction fetched successfully",
             success: true,
