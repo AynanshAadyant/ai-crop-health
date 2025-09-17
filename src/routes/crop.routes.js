@@ -4,9 +4,9 @@ import { addCrop, getAllCrops, getCropById, removeCrop } from "../controllers/cr
 
 const Router = e.Router();
 
-Router.post( "/add", protectedRoute, addCrop );
-Router.get( "/", protectedRoute, getAllCrops );
-Router.get( "/:id", protectedRoute, getCropById );
-Router.delete( "/:id", protectedRoute, removeCrop );
+Router.post( "/add", addCrop );
+Router.get( "/", getAllCrops );
+Router.get( "/:id", getCropById );
+Router.delete( "/:id", removeCrop );
 
 export default Router;

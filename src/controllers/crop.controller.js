@@ -3,7 +3,6 @@ import Crop from "../models/crop.model.js";
 const addCrop = async( req, res ) => {
     console.log( "Adding a new crop" );
     const { name, variety="", fieldLocation={ latitude:undefined, longitude:undefined} } = req.body;
-    const user = req.user;
 
     if( !name ) {
         return res.status( 400 ).json( {
@@ -23,7 +22,7 @@ const addCrop = async( req, res ) => {
     }
 
     const crop = await Crop.create( {
-        name, variety, user, fieldLocation 
+        name, variety, fieldLocation 
     })
 
     return res.status( 200 ).json( {
@@ -36,8 +35,7 @@ const addCrop = async( req, res ) => {
 
 const getAllCrops = async( req, res ) => {
     console.log( "Fetching all crops for the user" );
-    const user = req.user;
-    const crops = await Crop.find( { user, isDeleted: false } );
+    const crops = await Crop.find( { isDeleted: false } );
     if( !crops || !Array.isArray(crops) )
         return res.status( 500 ).json( {
             success: false,

@@ -11,7 +11,6 @@ function predict( imageId ) {
 
 const request = async( req, res ) => {
     try{
-        const user = req.user;
         const {image, crop} = req.body;
         const result = predict( image.imageUrl );
 
@@ -22,7 +21,7 @@ const request = async( req, res ) => {
                 message: "Crop not found"
             })
         }
-        cropData.healthIndex = result.healthIndex;
+        cropData.healthStatus = result.healthStatus;
         if( !result ) {
             return res.status( 400 ).json( {
                 message: "Result not generated",
@@ -32,9 +31,8 @@ const request = async( req, res ) => {
         }
 
         const prediction = await Prediction.create( {
-            user,
             imageId : image._id,
-            healthIndex: result.healthIndex,
+            healthStatus: result.healthStatus,
             disease : result.disease || "",
             confidence : result.confidence || 0
         })
@@ -58,9 +56,8 @@ const request = async( req, res ) => {
 
 const getAll = async( req, res ) => {
     try{
-        const user = req.user;
         
-        const predictions = await Prediction.find( { userId : user._id } );
+        const predictions = await Prediction.find();
         if( !predictions || predictions.length === 0 ) {
             return res.status( 500 ).json( {
                 message: "No predictions for this user",

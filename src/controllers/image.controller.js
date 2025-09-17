@@ -21,7 +21,6 @@ const uploadImage = async (req, res) => {
     }
 
     const image = await Image.create( {
-      userId : req.user._id,
       imageUrl: uploadedFile.url
     })
 
@@ -44,9 +43,7 @@ const uploadImage = async (req, res) => {
 
 const getImages = async( req, res ) => {
     try{
-        const user = req.user;
-
-        const images = await Image.find({ user : user._id, isDeleted: false })
+        const images = await Image.find({ isDeleted: false })
 
         if( !images || images.length === 0 ) {
             return res.status( 404 ).json({

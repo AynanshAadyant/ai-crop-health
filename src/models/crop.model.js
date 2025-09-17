@@ -9,7 +9,7 @@ const cropSchema = new mongoose.Schema( {
     variety : {
         type: String
     },
-    user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     fieldLocation :{
         latitute: {
             type: Number, 
@@ -22,7 +22,7 @@ const cropSchema = new mongoose.Schema( {
             max: 180 //east
         }
     },
-    health: {
+    healthStatus: {
         type: String
     },
     isDeleted:{

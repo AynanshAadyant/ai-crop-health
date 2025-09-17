@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 
 const imageSchema = new mongoose.Schema({
-  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   imageUrl: { type: String, required: true },
   cropName : { type: mongoose.Schema.Types.ObjectId, ref: 'Crop'},
   type: { type: String },
