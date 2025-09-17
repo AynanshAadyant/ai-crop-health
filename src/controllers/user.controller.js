@@ -47,7 +47,7 @@ const signup = async( req, res ) => {
         })
 
         const otp = await generateOTP();
-        const otpExpiry = Date.now() + 20 * 60 * 1000;
+        const otpExpiry = Date.now() + 5 * 60 * 1000;
 
         await Otp.create( { user: newUser._id,
             otp, otpExpiry 
@@ -152,7 +152,7 @@ const login = async( req, res ) => {
 
 
         const otp = generateOTP();
-        const otpExpiry = Date.now() + 20 * 60 * 1000;
+        const otpExpiry = Date.now() + 5 * 60 * 1000;
         await Otp.create( {
             user, 
             otp,
