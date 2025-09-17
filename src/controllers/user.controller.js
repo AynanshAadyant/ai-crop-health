@@ -127,6 +127,48 @@ const verifySignupOtp = async (req, res) => {
   }
 };
 
+const resendOTP = async( req, res ) => {
+    try{
+        const { phoneNumber } = req.body;
+        const user = await User.findOne( { phoneNumber} );
+        if( !user ) {
+            return res.status( 404 ).json( {
+                success: false,
+                status: 404,
+                message: "User not found"
+            })
+        }
+        if( !user.isVerified ) {
+            return res.status( 500 ).json( {
+                success: false,
+                message: "User not verified",
+            })
+        }
+
+        await Otp.deleteMany( {user} );
+
+        const otp = generateOTP();
+        const otpExpiry = Date.now() + 5 * 60 * 1000;
+        await Otp.create( {
+            user, 
+            otp,
+            otpExpiry
+        })
+        sendOTP( phoneNumber, otp );
+
+        return res.status( 200 ).json( {
+            success: true,
+            message: "OTP resent successfully"
+        })
+    }
+    catch(e) {
+        console.log( "ERROR: ", e );
+        return res.status( 500 ).json( {
+            message: "Something went wrong",
+            success: false
+        })
+    }
+}
 
 const login = async( req, res ) => {
     try{
@@ -197,7 +239,7 @@ const verifyLoginOtp = async (req, res) => {
       return res.status(400).json({ success: false, message: "User not found" });
     }
 
-    const otpRecord = await Otp.findOne({ user: user._id }).sort({ createdAt: -1 });
+    const otpRecord = await Otp.find({ user: user._id }).sort({ createdAt: -1 });
     if (!otpRecord) {
       return res.status(400).json({ success: false, message: "OTP not found" });
     }
@@ -238,6 +280,7 @@ const verifyLoginOtp = async (req, res) => {
 
 const getUser = async( req, res ) => {
     try{
+        console.log( "Fetching user details " );
         const user = req.user;
         return res.status( 200 ).json( {
             message: "User fetched successfully",
@@ -258,6 +301,7 @@ const getUser = async( req, res ) => {
 
 const logout = async( req, res ) => {
     try{
+        console.log( "Log out" );
         res.clearCookie( 'auth_token', {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production",
@@ -279,4 +323,4 @@ const logout = async( req, res ) => {
     }
 }
 
-export { signup, verifySignupOtp, login, verifyLoginOtp, getUser, logout }
+export { signup, verifySignupOtp, login, verifyLoginOtp, getUser, logout, resendOTP }
