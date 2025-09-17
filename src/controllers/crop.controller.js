@@ -29,7 +29,8 @@ const addCrop = async( req, res ) => {
     return res.status( 200 ).json( {
         success: true,
         status: 200,
-        message: "Crop added successfully"
+        message: "Crop added successfully",
+        body : crop
     })
 }
 
