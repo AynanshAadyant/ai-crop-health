@@ -13,8 +13,8 @@ const messaging = new Messaging(client);
 
 dotenv.config();
 export default async function sendOTP(phoneNumber, otp) {
-  const response = fallback( phoneNumber, otp );
-  return response;
+  const response = await fallback( phoneNumber, otp );
+  return { success: true } ;
 }
 
 async function usingService( phoneNumber, otp ) {

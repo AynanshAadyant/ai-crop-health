@@ -162,13 +162,13 @@ const login = async( req, res ) => {
             otp,
             otpExpiry
         })
-        const response = sendOTP( phoneNumber, otp );
-        if( !response.success ) {
-            return res.status( 500 ).json( {
-                message: response.message || "Something went wrong while sending otp",
-                success: false
-            })
-        }
+        sendOTP( phoneNumber, otp );
+        // if( !response.success ) {
+        //     return res.status( 500 ).json( {
+        //         message: response.message || "Something went wrong while sending otp",
+        //         success: false
+        //     })
+        // }
     
         return res.status( 200 ).json( {
             success: true,
