@@ -74,7 +74,6 @@ const currentWeather = async (req, res) => {
     const url = "https://api.open-meteo.com/v1/forecast";
     const responses = await fetchWeatherApi(url, params);
     const response = responses[0];
-
     const utcOffsetSeconds = response.utcOffsetSeconds();
 
     // --- Current weather ---
@@ -83,12 +82,12 @@ const currentWeather = async (req, res) => {
       time: new Date((Number(current.time()) + utcOffsetSeconds) * 1000), 
       weather_code: current.variables(0).value(), //weather_code
       weather_description: mapWeatherCode(current.variables(0).value()), //type of weather expected
-      temperature_2m: current.variables(0).value(), //temperature in celsius
-      relative_humidity_2m: current.variables(1).value(), //relative humidity ( % )
-      precipitation: current.variables(2).value(), //precipitation (mm)
-      rain: current.variables(3).value(), //rainfall ( mm )
-      showers: current.variables(4).value(), //showers from convetive percipitation (mm)
-      wind_speed_10m: current.variables(5).value(), //wind speed at 10m elevation ( kmph)
+      temperature_2m: Math.floor( current.variables(1).value() ), //temperature in celsius
+      relative_humidity_2m: Math.floor( current.variables(2).value() ), // % 
+      precipitation: Math.floor( current.variables(3).value() ), //precipitation (mm)
+      rain: Math.ceil( current.variables(4).value() ), //rainfall ( mm )
+      showers: Math.ceil( current.variables(5).value() ), //showers from convetive percipitation (mm)
+      wind_speed_10m: Math.ceil( current.variables(6).value() ), //wind speed at 10m elevation ( kmph)
     };
 
     // --- Daily forecast (today + tomorrow) ---
@@ -100,11 +99,11 @@ const currentWeather = async (req, res) => {
     const dailyForecast = {
       time: times, //timestamp
       weather_code: daily.variables(0).valuesArray(), //weather-code
-      temperature_2m_max: daily.variables(0).valuesArray(), //max temperature at 2m elevation ( celsius )
-      temperature_2m_min: daily.variables(1).valuesArray(), //min temperature at 2m elevation ( celsius )
-      rain_sum: daily.variables(2).valuesArray(), //sum of daily rain ( mm )
-      wind_speed_10m_max: daily.variables(3).valuesArray(), //max wind speed at 10m elevation ( kmph )
-      showers_sum: daily.variables(4).valuesArray(), //showers sum ( mm )
+      temperature_2m_max: daily.variables(1).valuesArray(), //max temperature at 2m elevation ( celsius )
+      temperature_2m_min: daily.variables(2).valuesArray(), //min temperature at 2m elevation ( celsius )
+      rain_sum: daily.variables(3).valuesArray(), //sum of daily rain ( mm )
+      wind_speed_10m_max: daily.variables(4).valuesArray(), //max wind speed at 10m elevation ( kmph )
+      showers_sum: daily.variables(5).valuesArray(), //showers sum ( mm )
     };
 
     // Pick tomorrow’s index (1 = tomorrow, 0 = today)
@@ -112,11 +111,11 @@ const currentWeather = async (req, res) => {
       date: dailyForecast.time[1],
       weather_code: dailyForecast.weather_code[1],
       weather_description: mapWeatherCode(dailyForecast.weather_code[1]),
-      temperature_max: dailyForecast.temperature_2m_max[1],
-      temperature_min: dailyForecast.temperature_2m_min[1],
-      rain_sum: dailyForecast.rain_sum[1],
-      wind_speed_10m_max: dailyForecast.wind_speed_10m_max[1],
-      showers_sum: dailyForecast.showers_sum[1],
+      temperature_max: Math.ceil(dailyForecast.temperature_2m_max[1] ),
+      temperature_min: Math.floor(dailyForecast.temperature_2m_min[1] ),
+      rain_sum: Math.ceil(dailyForecast.rain_sum[1] ),
+      wind_speed_10m_max: Math.ceil(dailyForecast.wind_speed_10m_max[1] ),
+      showers_sum: Math.ceil(dailyForecast.showers_sum[1] ),
     };
     console.log( "Weather data fetched" );
     return res.status(200).json({
