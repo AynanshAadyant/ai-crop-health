@@ -12,7 +12,7 @@ const addCrop = async( req, res ) => {
         })
     }
 
-    const cropAlreadyPresent = await Crop.findOne( { name, user } );
+    const cropAlreadyPresent = await Crop.findOne( { name } );
     if( cropAlreadyPresent ) {
         return res.status( 401 ).json( {
             status: 401, 
