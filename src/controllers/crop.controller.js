@@ -22,7 +22,7 @@ const addCrop = async( req, res ) => {
     }
 
     const crop = await Crop.create( {
-        name, variety, fieldLocation 
+        name, variety, fieldLocation, isDeleted : false 
     })
 
     return res.status( 200 ).json( {
@@ -44,7 +44,7 @@ const getAllCrops = async( req, res ) => {
     })
 
     console.log( crops );
-    
+
     if( crops.length === 0 ) {
         return res.status( 200 ).json({
             message: "No Crop data up till now",

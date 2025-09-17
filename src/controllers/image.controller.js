@@ -21,7 +21,8 @@ const uploadImage = async (req, res) => {
     }
 
     const image = await Image.create( {
-      imageUrl: uploadedFile.url
+      imageUrl: uploadedFile.url,
+      isDeleted: false
     })
 
     return res.status(200).json({
