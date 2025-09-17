@@ -33,6 +33,7 @@ const mapWeatherCode = (code) => {
 
 const currentWeather = async (req, res) => {
     try {
+      console.log( "Weather api hit" );
     const { lat, long } = req.body;
 
     const params = {
@@ -117,7 +118,7 @@ const currentWeather = async (req, res) => {
       wind_speed_10m_max: dailyForecast.wind_speed_10m_max[1],
       showers_sum: dailyForecast.showers_sum[1],
     };
-
+    console.log( "Weather data fetched" );
     return res.status(200).json({
       success: true,
       message: "Weather data fetched successfully",
