@@ -1,12 +1,16 @@
 import Crop from "../models/crop.model.js";
 import Prediction from "../models/prediction.model.js";
 
-function predict( imageId ) {
-    return {
-        healthStatus: 'Healthy',
-        disease: "None",
-        confidence: 9
+    let i = 1;
+
+function predict(imageUrl) {
+    if( i++ % 2) {
+        return { healthStatus: "Unhealthy", disease : "Early Blight", confidence : 97 }
     }
+    else {
+        return { healthStatus: "Healthy", disease : "", confidence : 99}
+    }
+
 }
 
 const request = async( req, res ) => {
