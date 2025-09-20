@@ -4,6 +4,7 @@ import Prediction from "../models/prediction.model.js";
     let i = 1;
 
 function predict(imageUrl) {
+    //dummy prediction... to be integrated with ML service FastAPI server
     if( i++ % 2) {
         return { healthStatus: "Unhealthy", disease : "Early Blight", confidence : 97 }
     }
